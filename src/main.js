@@ -1,7 +1,7 @@
 // Modules to control application life and create native browser window
 const fs = require('fs'),
   path = require('path'),
-  { app, BrowserWindow, session, Menu, ipcMain } = require('electron'),
+  { app, BrowserWindow, globalShortcut, session, Menu, ipcMain } = require('electron'),
   Store = require('electron-store'),
   {
     ElectronBlocker,
@@ -121,8 +121,27 @@ async function createWindow() {
   let userServices = store.get('services') || [];
   global.services = userServices;
 
+  /*for (let i = defaultService.length - 1; i >= 0; i--) {
+    if (defaultService[i].name && isBanned(defaultService[i].name)) {
+      defaultService.splice(i, 1);
+    }
+  }*/
+  var isBanned = function(value) {
+    let prohibited = ['youtube', 'twitch'];
+
+    for (var i = 0; i < prohibited.length; i++) {
+      if (value.toLowerCase().indexOf(prohibited[i]) > -1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   require('./default-services').forEach(dservice => {
     let service = userServices.find(service => service.name == dservice.name);
+    if(isBanned(dservice.name))
+      return;
+    
     if (service) {
       global.services[userServices.indexOf(service)] = {
         name: service.name ? service.name : dservice.name,
@@ -372,3 +391,22 @@ app.on('remote-get-builtin', rejectEvent);
 app.on('remote-get-current-window', rejectEvent);
 app.on('remote-get-current-web-contents', rejectEvent);
 app.on('remote-get-guest-web-contents', rejectEvent);
+
+app.whenReady().then(() => {
+  // Register a 'CommandOrControl+X' shortcut listener.
+  const ret = globalShortcut.register('CommandOrControl+Shift+I', () => {
+    return null;
+  })
+
+  if (!ret) {
+    console.log('registration failed')
+  }
+})
+
+app.on('will-quit', () => {
+  // Unregister a shortcut.
+  globalShortcut.unregister('CommandOrControl+Shift+I')
+
+  // Unregister all shortcuts.
+  globalShortcut.unregisterAll()
+})
