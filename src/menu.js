@@ -227,30 +227,6 @@ module.exports = (store, services, mainWindow, app, defaultUserAgent) => {
             { type: 'separator' }
           ].concat(defaultServiceMenuItems)
         },
-        {
-          label: 'Edit Config',
-          click() {
-            store.openInEditor();
-          }
-        },
-        {
-          label: 'Reset all settings *',
-          click() {
-            // Reset Config
-            store.clear();
-
-            // Clear Engine Cache
-            let engineCachePath = path.join(
-              app.getPath('userData'),
-              'adblock-engine-cache.txt'
-            );
-            fs.unlinkSync(engineCachePath);
-
-            // Restart the app
-            app.relaunch();
-            app.quit();
-          }
-        },
         { label: '* Means App Will Restart', enabled: false }
       ]
     },
@@ -276,14 +252,6 @@ module.exports = (store, services, mainWindow, app, defaultUserAgent) => {
           accelerator: 'CmdOrCtrl+R',
           click(item, focusedWindow) {
             if (focusedWindow) focusedWindow.reload();
-          }
-        },
-        {
-          label: 'Toggle Developer Tools',
-          accelerator:
-            process.platform === 'darwin' ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-          click(item, focusedWindow) {
-            focusedWindow.webContents.toggleDevTools();
           }
         },
         {
